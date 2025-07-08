@@ -1,7 +1,9 @@
 package com.example.Splitwise.Service;
 
 import com.example.Splitwise.Entity.Friend;
+import com.example.Splitwise.Entity.User;
 import com.example.Splitwise.Repository.FriendRepository;
+import com.example.Splitwise.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +14,21 @@ public class FriendService {
 
     @Autowired
     private FriendRepository friendRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     // Save a friend relationship
     public Friend addFriend(Friend friend) {
+        Long userId = friend.getUser().getId();
+        Long friendId = friend.getFriend().getId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        User friendUser = userRepository.findById(friendId)
+                .orElseThrow(() -> new RuntimeException("Friend not found with ID: " + friendId));
+
+        friend.setUser(user);
+        friend.setFriend(friendUser);
         return friendRepository.save(friend);
     }
 
@@ -34,4 +48,41 @@ public class FriendService {
     public void deleteFriend(Long id) {
         friendRepository.deleteById(id);
     }
+
+
+    public Friend updateFriend(Long id, Friend updatedFriend) {
+        Long userId = updatedFriend.getUser().getId();
+        Long friendId = updatedFriend.getFriend().getId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        User friendUser = userRepository.findById(friendId)
+                .orElseThrow(() -> new RuntimeException("Friend not found with ID: " + friendId));
+
+        return friendRepository.findById(id)
+                .map(existingFriend -> {
+                    existingFriend.setUser(user);
+                    existingFriend.setFriend(friendUser);
+                    return friendRepository.save(existingFriend);
+                })
+                .orElseThrow(() -> new RuntimeException("Friend relationship not found with id: " + id));
+    }
+
+//    public Friend updateFriend(Long id, Friend updatedFriend) {
+//        Long userId = updatedFriend.getUser().getId();
+//        Long friendId = updatedFriend.getFriend().getId();
+//
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+//        User friendUser = userRepository.findById(friendId)
+//                .orElseThrow(() -> new RuntimeException("Friend not found with ID: " + friendId));
+//        return friendRepository.findById(id)
+//                .map(existingFriend -> {
+//                    existingFriend.setUser(updatedFriend.getUser());
+//                    existingFriend.setFriend(updatedFriend.getFriend());
+//                    return friendRepository.save(existingFriend);
+//                })
+//                .orElseThrow(() -> new RuntimeException("Friend relationship not found with id: " + id));
+//    }
+
 }

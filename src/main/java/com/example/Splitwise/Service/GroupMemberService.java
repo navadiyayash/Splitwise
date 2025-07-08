@@ -1,7 +1,11 @@
 package com.example.Splitwise.Service;
 
+import com.example.Splitwise.Entity.Group;
 import com.example.Splitwise.Entity.GroupMember;
+import com.example.Splitwise.Entity.User;
 import com.example.Splitwise.Repository.GroupMemberRepository;
+import com.example.Splitwise.Repository.GroupRepository;
+import com.example.Splitwise.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +16,14 @@ import java.util.Optional;
 public class GroupMemberService {
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private GroupMemberRepository groupMemberRepository;
 
-    // Add a user to a group
-    public GroupMember addMember(GroupMember groupMember) {
-        return groupMemberRepository.save(groupMember);
-    }
+    @Autowired
+    private GroupRepository groupRepository;
+
 
     // Get all group members
     public List<GroupMember> getAllMembers() {
@@ -37,5 +43,29 @@ public class GroupMemberService {
     public List<GroupMember> getMembersByGroupId(Long groupId) {
         return groupMemberRepository.findByGroupId(groupId);
 
+    }
+
+    public GroupMember updateMember(Long id, GroupMember updatedMember) {
+        return groupMemberRepository.findById(id).map(existing -> {
+            existing.setGroup(updatedMember.getGroup());
+            existing.setUser(updatedMember.getUser());
+            return groupMemberRepository.save(existing);
+        }).orElseThrow(() -> new RuntimeException("Group member not found with id: " + id));
+    }
+
+    public GroupMember addMember(GroupMember groupMember) {
+        // Fetch the full User and Group entities by ID
+        Long userId = groupMember.getUser().getId();
+        Long groupId = groupMember.getGroup().getId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found with ID: " + groupId));
+
+        groupMember.setUser(user);
+        groupMember.setGroup(group);
+
+        return groupMemberRepository.save(groupMember);
     }
 }

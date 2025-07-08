@@ -37,4 +37,31 @@ public class FriendController {
         friendService.deleteFriend(id);
         return ResponseEntity.noContent().build();
     }
+
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Friend> updateFriend(@PathVariable Long id, @RequestBody Friend updatedFriend) {
+//        List<Friend> all = friendService.getAllFriends();
+//        for (Friend f : all) {
+//            if (f.getId().equals(id)) {
+//                f.setUser(updatedFriend.getUser());
+//                f.setFriend(updatedFriend.getFriend());
+//                Friend saved = friendService.addFriend(f);
+//                return ResponseEntity.ok(saved);
+//            }
+//        }
+//        return ResponseEntity.notFound().build();
+//    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Friend> updateFriend(@PathVariable Long id, @RequestBody Friend updatedFriend) {
+        Friend saved = friendService.updateFriend(id, updatedFriend);
+        return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Friend>> getAllFriends() {
+        return ResponseEntity.ok(friendService.getAllFriends());
+    }
+
+
 }

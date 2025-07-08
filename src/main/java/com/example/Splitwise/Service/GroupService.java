@@ -1,7 +1,9 @@
 package com.example.Splitwise.Service;
 
 import com.example.Splitwise.Entity.Group;
+import com.example.Splitwise.Entity.User;
 import com.example.Splitwise.Repository.GroupRepository;
+import com.example.Splitwise.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,9 @@ public class GroupService {
 
     @Autowired
     private GroupRepository groupRepository;
+    @Autowired
+    private UserRepository userRepository;
+
 
     // Create a new group
     public Group createGroup(Group group) {
@@ -39,4 +44,21 @@ public class GroupService {
         return groupRepository.findByCreatedById(userId);
 
     }
+
+    public Group updateGroup(Long id, Group updatedGroup) {
+        return groupRepository.findById(id).map(existingGroup -> {
+            existingGroup.setName(updatedGroup.getName());
+            existingGroup.setAutoSimplifyEnabled(updatedGroup.getAutoSimplifyEnabled());
+
+            // Make sure to fetch and set full user object if only ID is passed
+            Long userId = updatedGroup.getCreatedBy().getId();
+            User creator = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            existingGroup.setCreatedBy(creator);
+
+            return groupRepository.save(existingGroup);
+        }).orElseThrow(() -> new RuntimeException("Group not found with id: " + id));
+    }
+
+
 }

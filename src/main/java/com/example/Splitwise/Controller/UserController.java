@@ -2,6 +2,7 @@ package com.example.Splitwise.Controller;
 
 import com.example.Splitwise.Entity.User;
 import com.example.Splitwise.Service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,11 +20,18 @@ public class UserController {
     }
 
     // ✅ Create a new user
+//    @PostMapping
+//    public ResponseEntity<User> createUser(@RequestBody User user) {
+//        User created = userService.createUser(user);
+//        return ResponseEntity.ok(created);
+//    }
+
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        User created = userService.createUser(user);
-        return ResponseEntity.ok(created);
+        User savedUser = userService.createUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
+
 
     // ✅ Get user by ID
     @GetMapping("/{id}")
@@ -53,4 +61,21 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+        Optional<User> optionalUser = userService.getUserById(id);
+
+        if (optionalUser.isPresent()) {
+            User existingUser = optionalUser.get();
+            existingUser.setName(updatedUser.getName());
+            existingUser.setEmail(updatedUser.getEmail());
+            existingUser.setPasswordHash(updatedUser.getPasswordHash());
+            User savedUser = userService.createUser(existingUser); // using save() in createUser
+            return ResponseEntity.ok(savedUser);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

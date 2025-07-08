@@ -39,4 +39,24 @@ public class GroupController {
         List<Group> groups = groupService.getGroupsByUserId(userId);
         return ResponseEntity.ok(groups);
     }
+
+    @GetMapping
+    public ResponseEntity<List<Group>> getAllGroups() {
+        List<Group> groups = groupService.getAllGroups();
+        return ResponseEntity.ok(groups);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Group> updateGroup(@PathVariable Long id, @RequestBody Group updatedGroup) {
+        Group group = groupService.updateGroup(id, updatedGroup);
+        return ResponseEntity.ok(group);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteGroup(@PathVariable Long id) {
+        groupService.deleteGroup(id);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+
 }

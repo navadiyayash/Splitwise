@@ -43,4 +43,11 @@ public class SettlementController {
         settlementService.deleteSettlement(id);
         return ResponseEntity.noContent().build();
     }
+    // Update a settlement
+    @PutMapping("/{id}")
+    public ResponseEntity<Settlement> updateSettlement(@PathVariable Long id, @RequestBody Settlement settlement) {
+        Settlement updated = settlementService.updateSettlement(id, settlement);
+        return ResponseEntity.ok(updated);
+    }
+
 }

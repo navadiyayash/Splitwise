@@ -43,4 +43,10 @@ public class GroupBalanceService {
         return groupBalanceRepository.findByGroupId(groupId);
 
     }
+
+
+    public List<GroupBalance> getGroupBalancesByGroupId(Long groupId) {
+        return groupBalanceRepository.findByGroupId(groupId);
+    }
+
 }
