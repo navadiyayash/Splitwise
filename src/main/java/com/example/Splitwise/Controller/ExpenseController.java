@@ -3,6 +3,8 @@ package com.example.Splitwise.Controller;
 import com.example.Splitwise.Entity.Expense;
 import com.example.Splitwise.Entity.Group;
 import com.example.Splitwise.Entity.User;
+import com.example.Splitwise.Exception.GroupNotFoundException;
+import com.example.Splitwise.Exception.UserNotFoundException;
 import com.example.Splitwise.Repository.GroupRepository;
 import com.example.Splitwise.Repository.UserRepository;
 import com.example.Splitwise.Service.ExpenseService;
@@ -68,20 +70,14 @@ public class ExpenseController {
     @GetMapping("/group/{groupId}")
     public ResponseEntity<List<Expense>> getExpensesByGroupId(@PathVariable Long groupId) {
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupNotFoundException("Group not found with id: " + groupId));
         return ResponseEntity.ok(expenseService.getExpensesByGroup(group));
     }
-
-    // Get expenses by user ID
-//    @GetMapping("/user/{userId}")
-//    public ResponseEntity<List<Expense>> getExpensesByPaidByUserId(@PathVariable Long userId) {
-//        return ResponseEntity.ok(expenseService.getExpensesByPaidByUserId(userId));
-//    }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Expense>> getExpensesByUserId(@PathVariable Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
         return ResponseEntity.ok(expenseService.getExpensesByPayer(user));
     }
 

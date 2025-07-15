@@ -3,6 +3,9 @@ package com.example.Splitwise.Service;
 import com.example.Splitwise.Entity.Expense;
 import com.example.Splitwise.Entity.ExpenseShare;
 import com.example.Splitwise.Entity.User;
+import com.example.Splitwise.Exception.ExpenseNotFoundException;
+import com.example.Splitwise.Exception.ExpenseShareNotFoundException;
+import com.example.Splitwise.Exception.UserNotFoundException;
 import com.example.Splitwise.Repository.ExpenseRepository;
 import com.example.Splitwise.Repository.ExpenseShareRepository;
 import com.example.Splitwise.Repository.UserRepository;
@@ -36,11 +39,15 @@ public class ExpenseShareService {
 
     // Get an expense share by ID
     public Optional<ExpenseShare> getExpenseShareById(Long id) {
-        return expenseShareRepository.findById(id);
+        return Optional.ofNullable(expenseShareRepository.findById(id)
+            .orElseThrow(() -> new ExpenseShareNotFoundException("ExpenseShare not found: " + id)));
     }
 
     // Delete an expense share
     public void deleteExpenseShare(Long id) {
+        if (!expenseShareRepository.existsById(id)) {
+            throw new ExpenseShareNotFoundException("ExpenseShare not found: " + id);
+        }
         expenseShareRepository.deleteById(id);
     }
 
@@ -50,9 +57,9 @@ public class ExpenseShareService {
         Long userId = share.getUser().getId();
 
         Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new RuntimeException("Expense not found: " + expenseId));
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found: " + expenseId));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
 
         share.setExpense(expense);
         share.setUser(user);

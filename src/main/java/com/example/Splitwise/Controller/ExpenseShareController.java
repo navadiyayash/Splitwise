@@ -2,6 +2,9 @@ package com.example.Splitwise.Controller;
 
 import com.example.Splitwise.Entity.ExpenseShare;
 import com.example.Splitwise.Service.ExpenseShareService;
+import com.example.Splitwise.Exception.ExpenseNotFoundException;
+import com.example.Splitwise.Exception.UserNotFoundException;
+import com.example.Splitwise.Exception.ExpenseShareNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,17 +23,27 @@ public class ExpenseShareController {
 
     // Create a new ExpenseShare
     @PostMapping
-    public ResponseEntity<ExpenseShare> createExpenseShare(@RequestBody ExpenseShare expenseShare) {
-        ExpenseShare created = expenseShareService.createExpenseShare(expenseShare);
-        return ResponseEntity.ok(created);
+    public ResponseEntity<?> createExpenseShare(@RequestBody ExpenseShare expenseShare) {
+        try {
+            ExpenseShare created = expenseShareService.createExpenseShare(expenseShare);
+            return ResponseEntity.ok(created);
+        } catch (ExpenseNotFoundException | UserNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     // Get by ID
     @GetMapping("/{id}")
-    public ResponseEntity<ExpenseShare> getById(@PathVariable Long id) {
-        Optional<ExpenseShare> expenseShare = expenseShareService.getExpenseShareById(id);
-        return expenseShare.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        try {
+            Optional<ExpenseShare> expenseShare = expenseShareService.getExpenseShareById(id);
+            return expenseShare.map(ResponseEntity::ok)
+                    .orElseThrow(() -> new ExpenseShareNotFoundException("ExpenseShare not found with id: " + id));
+        } catch (ExpenseShareNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 
     // Get all
@@ -41,8 +54,12 @@ public class ExpenseShareController {
 
     // Delete
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        expenseShareService.deleteExpenseShare(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            expenseShareService.deleteExpenseShare(id);
+            return ResponseEntity.noContent().build();
+        } catch (ExpenseShareNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 }

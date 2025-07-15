@@ -8,6 +8,7 @@ class SplitwiseApplicationTests {
 
 	@Test
 	void contextLoads() {
+
 	}
 
 }

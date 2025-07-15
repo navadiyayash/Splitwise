@@ -1,7 +1,10 @@
 package com.example.Splitwise.Controller;
 
 import com.example.Splitwise.Entity.Friend;
+import com.example.Splitwise.Exception.FriendNotFoundException;
+import com.example.Splitwise.Exception.UserNotFoundException;
 import com.example.Splitwise.Service.FriendService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,23 +22,43 @@ public class FriendController {
 
     // ✅ Add a friend connection
     @PostMapping
-    public ResponseEntity<Friend> addFriend(@RequestBody Friend friend) {
-        Friend saved = friendService.addFriend(friend);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<?> addFriend(@RequestBody Friend friend) {
+        try {
+            Friend saved = friendService.addFriend(friend);
+            return ResponseEntity.ok(saved);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body("Invalid friend relationship: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     // ✅ Get all friends of a user
     @GetMapping("/{userId}")
-    public ResponseEntity<List<Friend>> getFriendsByUserId(@PathVariable Long userId) {
-        List<Friend> friends = friendService.getFriendsByUserId(userId);
-        return ResponseEntity.ok(friends);
+    public ResponseEntity<?> getFriendsByUserId(@PathVariable Long userId) {
+        try {
+            List<Friend> friends = friendService.getFriendsByUserId(userId);
+            return ResponseEntity.ok(friends);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     // ✅ Delete a friend relationship by ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFriend(@PathVariable Long id) {
-        friendService.deleteFriend(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteFriend(@PathVariable Long id) {
+        try {
+            friendService.deleteFriend(id);
+            return ResponseEntity.noContent().build();
+        } catch (FriendNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
 //    @PutMapping("/{id}")
@@ -53,14 +76,26 @@ public class FriendController {
 //    }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Friend> updateFriend(@PathVariable Long id, @RequestBody Friend updatedFriend) {
-        Friend saved = friendService.updateFriend(id, updatedFriend);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<?> updateFriend(@PathVariable Long id, @RequestBody Friend updatedFriend) {
+        try {
+            Friend saved = friendService.updateFriend(id, updatedFriend);
+            return ResponseEntity.ok(saved);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (FriendNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     @GetMapping
-    public ResponseEntity<List<Friend>> getAllFriends() {
-        return ResponseEntity.ok(friendService.getAllFriends());
+    public ResponseEntity<?> getAllFriends() {
+        try {
+            return ResponseEntity.ok(friendService.getAllFriends());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
 

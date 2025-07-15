@@ -3,10 +3,14 @@ package com.example.Splitwise.Controller;
 import com.example.Splitwise.Entity.Group;
 import com.example.Splitwise.Entity.GroupMember;
 import com.example.Splitwise.Entity.User;
+import com.example.Splitwise.Exception.GroupMemberNotFoundException;
+import com.example.Splitwise.Exception.GroupNotFoundException;
+import com.example.Splitwise.Exception.UserNotFoundException;
 import com.example.Splitwise.Repository.GroupMemberRepository;
 import com.example.Splitwise.Repository.GroupRepository;
 import com.example.Splitwise.Repository.UserRepository;
 import com.example.Splitwise.Service.GroupMemberService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,48 +60,41 @@ public class GroupMemberController {
 
     // Get all group members
     @GetMapping
-    public ResponseEntity<List<GroupMember>> getAllMembers() {
-        return ResponseEntity.ok(groupMemberService.getAllMembers());
+    public ResponseEntity<?> getAllMembers() {
+        try {
+            return ResponseEntity.ok(groupMemberService.getAllMembers());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GroupMember> updateGroupMember(@PathVariable Long id, @RequestBody GroupMember updatedGroupMember) {
-        Optional<GroupMember> existingMemberOpt = groupMemberService.getMemberById(id);
-
-        if (existingMemberOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> updateGroupMember(@PathVariable Long id, @RequestBody GroupMember updatedGroupMember) {
+        try {
+            Optional<GroupMember> existingMemberOpt = groupMemberService.getMemberById(id);
+            if (existingMemberOpt.isEmpty()) {
+                throw new GroupMemberNotFoundException("Group member not found with id: " + id);
+            }
+            GroupMember existingMember = existingMemberOpt.get();
+            Long groupId = updatedGroupMember.getGroup().getId();
+            Long userId = updatedGroupMember.getUser().getId();
+            Group group = groupRepository.findById(groupId)
+                    .orElseThrow(() -> new GroupNotFoundException("Group not found with ID: " + groupId));
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+            existingMember.setGroup(group);
+            existingMember.setUser(user);
+            GroupMember saved = groupMemberService.updateMember(id, existingMember);
+            return ResponseEntity.ok(saved);
+        } catch (GroupMemberNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (GroupNotFoundException | UserNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body("Invalid group member data: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
         }
-
-        GroupMember existingMember = existingMemberOpt.get();
-
-        Long groupId = updatedGroupMember.getGroup().getId();
-        Long userId = updatedGroupMember.getUser().getId();
-
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found with ID: " + groupId));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-
-        existingMember.setGroup(group);
-        existingMember.setUser(user);
-
-        GroupMember saved = groupMemberRepository.save(existingMember);
-        return ResponseEntity.ok(saved);
     }
-
-//    @PutMapping("/{id}")
-//    public ResponseEntity<GroupMember> updateGroupMember(@PathVariable Long id, @RequestBody GroupMember updatedGroupMember) {
-//        Optional<GroupMember> optionalMember = groupMemberService.getMemberById(id);
-//        if (optionalMember.isPresent()) {
-//            GroupMember existingMember = optionalMember.get();
-//            existingMember.setGroup(updatedGroupMember.getGroup());
-//            existingMember.setUser(updatedGroupMember.getUser());
-//            GroupMember savedMember = groupMemberService.addMember(existingMember);
-//            return ResponseEntity.ok(savedMember);
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
 
 }

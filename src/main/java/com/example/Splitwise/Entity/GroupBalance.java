@@ -26,6 +26,10 @@ public class GroupBalance {
     @JoinColumn(name = "to_user_id")
     private User toUser;
 
+    @ManyToOne
+    @JoinColumn(name = "owned_to_user_id")
+    private User owedToUser;
+
     @Column(nullable = false)
     private BigDecimal amount;
 
@@ -61,6 +65,14 @@ public class GroupBalance {
 
     public void setToUser(User toUser) {
         this.toUser = toUser;
+    }
+
+    public User getOwedToUser() {
+        return owedToUser;
+    }
+
+    public void setOwedToUser(User owedToUser) {
+        this.owedToUser = owedToUser;
     }
 
     public BigDecimal getAmount() {

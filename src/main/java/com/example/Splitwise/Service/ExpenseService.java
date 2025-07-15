@@ -71,10 +71,10 @@ public class ExpenseService {
                     Long groupId = updatedExpense.getGroup().getId();
 
                     User payer = userRepository.findById(payerId)
-                            .orElseThrow(() -> new RuntimeException("User not found with id: " + payerId));
+                            .orElseThrow(() -> new com.example.Splitwise.Exception.UserNotFoundException("User not found with id: " + payerId));
 
                     Group group = groupRepository.findById(groupId)
-                            .orElseThrow(() -> new RuntimeException("Group not found with id: " + groupId));
+                            .orElseThrow(() -> new com.example.Splitwise.Exception.GroupNotFoundException("Group not found with id: " + groupId));
 
                     // Set updated fields
                     expense.setDescription(updatedExpense.getDescription());
@@ -85,7 +85,7 @@ public class ExpenseService {
 
                     return expenseRepository.save(expense);
                 })
-                .orElseThrow(() -> new RuntimeException("Expense not found with id: " + id));
+                .orElseThrow(() -> new com.example.Splitwise.Exception.ExpenseNotFoundException("Expense not found with id: " + id));
     }
 
 //    public Expense updateExpense(Long id, Expense updatedExpense) {

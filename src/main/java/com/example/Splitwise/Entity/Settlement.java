@@ -23,9 +23,42 @@ public class Settlement {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    @ManyToOne
+    private User payer;
+
+    @ManyToOne
+    private User payee;
+
+    @ManyToOne
+    private Group group;
+
+
     private LocalDateTime paidAt;
 
     // Getters and setters
+
+    public User getPayer() {
+        return payer;
+    }
+    public void setPayer(User payer) {
+        this.payer = payer;
+    }
+
+    public User getPayee() {
+        return payee;
+    }
+    public void setPayee(User payee) {
+        this.payee = payee;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
+
 
     public Long getId() {
         return id;

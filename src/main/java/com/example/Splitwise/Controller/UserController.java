@@ -1,7 +1,9 @@
 package com.example.Splitwise.Controller;
 
 import com.example.Splitwise.Entity.User;
+import com.example.Splitwise.Exception.UserNotFoundException;
 import com.example.Splitwise.Service.UserService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,24 +59,37 @@ public class UserController {
 
     // ✅ Delete user by ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
-        Optional<User> optionalUser = userService.getUserById(id);
-
-        if (optionalUser.isPresent()) {
-            User existingUser = optionalUser.get();
-            existingUser.setName(updatedUser.getName());
-            existingUser.setEmail(updatedUser.getEmail());
-            existingUser.setPasswordHash(updatedUser.getPasswordHash());
-            User savedUser = userService.createUser(existingUser); // using save() in createUser
-            return ResponseEntity.ok(savedUser);
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+        try {
+            Optional<User> optionalUser = userService.getUserById(id);
+            if (optionalUser.isPresent()) {
+                User existingUser = optionalUser.get();
+                existingUser.setName(updatedUser.getName());
+                existingUser.setEmail(updatedUser.getEmail());
+                existingUser.setPasswordHash(updatedUser.getPasswordHash());
+                User savedUser = userService.createUser(existingUser);
+                return ResponseEntity.ok(savedUser);
+            } else {
+                throw new UserNotFoundException("User not found with id: " + id);
+            }
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body("Invalid user data: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
         }
     }
 

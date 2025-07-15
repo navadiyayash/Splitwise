@@ -1,7 +1,10 @@
 package com.example.Splitwise.Controller;
 
 import com.example.Splitwise.Entity.Group;
+import com.example.Splitwise.Exception.GroupNotFoundException;
+import com.example.Splitwise.Exception.UserNotFoundException;
 import com.example.Splitwise.Service.GroupService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,42 +23,80 @@ public class GroupController {
 
     // Create a new group
     @PostMapping
-    public ResponseEntity<Group> createGroup(@RequestBody Group group) {
-        Group createdGroup = groupService.createGroup(group);
-        return ResponseEntity.ok(createdGroup);
+    public ResponseEntity<?> createGroup(@RequestBody Group group) {
+        try {
+            Group createdGroup = groupService.createGroup(group);
+            return ResponseEntity.ok(createdGroup);
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body("Invalid group data: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     // Get group by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Group> getGroupById(@PathVariable Long id) {
-        Optional<Group> group = groupService.getGroupById(id);
-        return group.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getGroupById(@PathVariable Long id) {
+        try {
+            Optional<Group> group = groupService.getGroupById(id);
+            return group.map(ResponseEntity::ok)
+                    .orElseThrow(() -> new GroupNotFoundException("Group not found with id: " + id));
+        } catch (GroupNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     // Get all groups created by a user
     @GetMapping("/by-user/{userId}")
-    public ResponseEntity<List<Group>> getGroupsByUserId(@PathVariable Long userId) {
-        List<Group> groups = groupService.getGroupsByUserId(userId);
-        return ResponseEntity.ok(groups);
+    public ResponseEntity<?> getGroupsByUserId(@PathVariable Long userId) {
+        try {
+            List<Group> groups = groupService.getGroupsByUserId(userId);
+            return ResponseEntity.ok(groups);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     @GetMapping
-    public ResponseEntity<List<Group>> getAllGroups() {
-        List<Group> groups = groupService.getAllGroups();
-        return ResponseEntity.ok(groups);
+    public ResponseEntity<?> getAllGroups() {
+        try {
+            List<Group> groups = groupService.getAllGroups();
+            return ResponseEntity.ok(groups);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Group> updateGroup(@PathVariable Long id, @RequestBody Group updatedGroup) {
-        Group group = groupService.updateGroup(id, updatedGroup);
-        return ResponseEntity.ok(group);
+    public ResponseEntity<?> updateGroup(@PathVariable Long id, @RequestBody Group updatedGroup) {
+        try {
+            Group group = groupService.updateGroup(id, updatedGroup);
+            return ResponseEntity.ok(group);
+        } catch (GroupNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body("Invalid group data: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGroup(@PathVariable Long id) {
-        groupService.deleteGroup(id);
-        return ResponseEntity.noContent().build(); // 204 No Content
+    public ResponseEntity<?> deleteGroup(@PathVariable Long id) {
+        try {
+            groupService.deleteGroup(id);
+            return ResponseEntity.noContent().build();
+        } catch (GroupNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Unexpected error: " + e.getMessage());
+        }
     }
 
 
