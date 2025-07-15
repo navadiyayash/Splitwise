@@ -1,6 +1,9 @@
 package com.example.Splitwise.Controller;
 
 import com.example.Splitwise.Entity.GroupMember;
+import com.example.Splitwise.Repository.GroupMemberRepository;
+import com.example.Splitwise.Repository.GroupRepository;
+import com.example.Splitwise.Repository.UserRepository;
 import com.example.Splitwise.Service.GroupMemberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +13,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 //import org.springframework.boot.test.mock.mockito.MockBean;
+//import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.Arrays;
@@ -24,8 +29,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class GroupMemberControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @Mock
+    @MockBean
     private GroupMemberService groupMemberService;
+    @MockBean
+    private GroupRepository groupRepository;
+    @MockBean
+    private UserRepository userRepository;
+    @MockBean
+    private GroupMemberRepository groupMemberRepository;
     @Autowired
     private ObjectMapper objectMapper;
     private GroupMember groupMember;
