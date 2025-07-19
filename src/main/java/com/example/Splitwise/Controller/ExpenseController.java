@@ -28,6 +28,7 @@ public class ExpenseController {
     private GroupRepository groupRepository;
 
     public ExpenseController(ExpenseService expenseService) {
+
         this.expenseService = expenseService;
     }
 

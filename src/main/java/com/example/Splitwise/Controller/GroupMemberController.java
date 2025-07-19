@@ -24,7 +24,7 @@ public class GroupMemberController {
     private final GroupMemberService groupMemberService;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
-    private final GroupMemberRepository groupMemberRepository;
+//    private final GroupMemberRepository groupMemberRepository;
 
     public GroupMemberController(GroupMemberService groupMemberService,
                                  GroupRepository groupRepository,
@@ -33,7 +33,7 @@ public class GroupMemberController {
         this.groupMemberService = groupMemberService;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
-        this.groupMemberRepository = groupMemberRepository;
+//        this.groupMemberRepository = groupMemberRepository;
     }
 
     // Add a member to a group
