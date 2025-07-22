@@ -137,10 +137,11 @@ com.example.splitwise
 
 mvn test
 
-Future Enhancements
+## Future Enhancements
 
 * Add Swagger UI for live API documentation
 * Add email notifications for settlements
 * Build frontend UI using React or Angular
 * Add JWT-based user authentication
 * Add currency support and timezone features
+
