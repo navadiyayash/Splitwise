@@ -137,7 +137,7 @@ com.example.splitwise
 
 mvn test
 
-## Future Enhancements
+Future Enhancements
 
 * Add Swagger UI for live API documentation
 * Add email notifications for settlements
